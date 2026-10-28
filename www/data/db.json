@@ -1,0 +1,61 @@
+{
+  "users": [  ],
+  "announcements": [],
+  "attendanceSessions": [],
+  "payments": [
+    {
+      "id": "d2a4e255ff918f7f",
+      "studentId": "a638ee77bc91607a",
+      "month": 10,
+      "year": 2026,
+      "confirmed": true,
+      "confirmedBy": "42538c2111920153",
+      "confirmedAt": 1792777356994
+    }
+  ],
+  "uniforms": [
+    {
+      "id": "u1",
+      "name": "Camisa Azul",
+      "image": "img/uniformes/camisa azul.png",
+      "video": "img/uniformes/camisa azul.mp4",
+      "desc": "Camisa oficial Elite Combat — tecido respirável para treinos."
+    },
+    {
+      "id": "u2",
+      "name": "Short MT Azul",
+      "image": "img/uniformes/short mt azul.png",
+      "video": "img/uniformes/short mt azul.mp4",
+      "desc": "Short de Muay Thai com elástico reforçado e logo bordado."
+    },
+    {
+      "id": "u3",
+      "name": "Short KBX Azul",
+      "image": "img/uniformes/short kbx azul.png",
+      "video": "img/uniformes/short kbx azul.mp4",
+      "desc": "Short de Kickboxing com elástico reforçado e logo bordado."
+    },
+    {
+      "id": "u4",
+      "name": "Camisa Roxa",
+      "image": "img/uniformes/camisa roxa.png",
+      "video": "img/uniformes/camisa roxa.mp4",
+      "desc": "Camisa oficial Elite Combat — tecido respirável para treinos."
+    },
+    {
+      "id": "u5",
+      "name": "Short KBX Roxo",
+      "image": "img/uniformes/short kbx roxo.png",
+      "video": "img/uniformes/short kbx roxo.mp4",
+      "desc": "Short de Kickboxing com elástico reforçado e logo bordado."
+    },
+    {
+      "id": "u6",
+      "name": "Short MT Roxo",
+      "image": "img/uniformes/short mt roxo.png",
+      "video": "img/uniformes/short mt roxo.mp4",
+      "desc": "Short de Muay Thai com elástico reforçado e logo bordado."
+    }
+  ],
+  "delegatedStudentIds": []
+}
