@@ -401,6 +401,24 @@ async function handleApi(req, res, pathname) {
 }
 
 const server = http.createServer(async (req, res) => {
+    // Permite que o aplicativo Capacitor acesse a API no Render.
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+
+  // Responde às verificações preliminares CORS.
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+  
   try {
     const parsed = new URL(req.url, `http://localhost:${PORT}`);
     const pathname = decodeURIComponent(parsed.pathname);
