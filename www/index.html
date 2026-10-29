@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -5,126 +6,329 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0a0a0a" />
   <meta name="description" content="Elite Combat Muay Thai — Lute Como Um Tubarão" />
+
   <title>Elite Combat | Lute Como Um Tubarão</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
   <link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body>
   <div class="bg-mesh" aria-hidden="true"></div>
   <div class="accent-bar"></div>
 
-  <div id="loadingOverlay" class="loading-overlay hidden" aria-live="polite">
+  <!-- Tela de carregamento -->
+  <div
+    id="loadingOverlay"
+    class="loading-overlay hidden"
+    aria-live="polite"
+  >
     <div class="spinner" role="status"></div>
   </div>
 
+  <!-- ÁREA DE AUTENTICAÇÃO -->
   <div id="authRoot">
+
+    <!-- LOGIN -->
     <div class="glass-card animate-in" id="loginPanel">
       <div class="brand">
         <div class="logo-slot" id="logoSlotAuth">
-          <img id="logoImgAuth" src="logo.png" alt="Logo Elite Combat" />
-          <div class="logo-fallback">
-  <span class="mascot" aria-hidden="true">
-    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M4 36c8-2 14-6 20-12 4-4 8-10 14-10 4 0 6 2 8 6l10 4-8 2 6 6-10-1 4 6-12-3c-6 4-14 6-22 6-4 0-8-1-10-4z" fill="currentColor"/>
-      <circle cx="40" cy="22" r="1.6" fill="#0a0a0a"/>
-      <path d="M22 30l-4 8 8-4" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-    </svg>
-  </span>
-  
-</div>
-        </div>
-        <div class="brand-name">ELITE COMBAT</div>
-        <div class="brand-tagline">Lute Como Um Tubarão</div>
-        <div class="brand-sub">MUAY THAI</div>
-      </div>
-      <h2>Entrar</h2>
-      <label for="loginPhone">WhatsApp</label>
-      <input type="tel" id="loginPhone" placeholder="(98) 98467-3820" autocomplete="tel" />
-      <label for="loginPassword">Senha (6 caracteres)</label>
-      <input type="password" id="loginPassword" maxlength="6" autocomplete="current-password" />
-      <button type="button" class="btn btn-primary" id="btnLogin">Entrar na academia</button>
-      <div class="link-text">
-        Novo atleta?
-        <button type="button" id="goRegister">Cadastrar</button>
-      </div>
-      <div id="loginError" class="alert alert-error hidden" role="alert"></div>
-    </div>
+          <img
+            id="logoImgAuth"
+            src="logo.png"
+            alt="Logo Elite Combat"
+          />
 
-        <div class="glass-card animate-in hidden" id="registerPanel">
-      <div class="brand">
-        <div class="logo-slot">
-          <img class="logo-sync" src="logo.png" alt="" />
           <div class="logo-fallback">
-            <span class="mascot">
-              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 36c8-2 14-6 20-12 4-4 8-10 14-10 4 0 6 2 8 6l10 4-8 2 6 6-10-1 4 6-12-3c-6 4-14 6-22 6-4 0-8-1-10-4z" fill="currentColor"/>
-                <circle cx="40" cy="22" r="1.6" fill="#0a0a0a"/>
-                <path d="M22 30l-4 8 8-4" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <span class="mascot" aria-hidden="true">
+              <svg
+                viewBox="0 0 64 64"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4 36c8-2 14-6 20-12 4-4 8-10 14-10 4 0 6 2 8 6l10 4-8 2 6 6-10-1 4 6-12-3c-6 4-14 6-22 6-4 0-8-1-10-4z"
+                  fill="currentColor"
+                />
+                <circle cx="40" cy="22" r="1.6" fill="#0a0a0a" />
+                <path
+                  d="M22 30l-4 8 8-4"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linejoin="round"
+                />
               </svg>
             </span>
           </div>
         </div>
+
+        <div class="brand-name">ELITE COMBAT</div>
+        <div class="brand-tagline">Lute Como Um Tubarão</div>
+        <div class="brand-sub">MUAY THAI</div>
+      </div>
+
+      <h2>Entrar</h2>
+
+      <label for="loginPhone">WhatsApp</label>
+      <input
+        type="tel"
+        id="loginPhone"
+        placeholder="(98) 98467-3820"
+        autocomplete="tel"
+      />
+
+      <label for="loginPassword">Senha (6 caracteres)</label>
+      <input
+        type="password"
+        id="loginPassword"
+        maxlength="6"
+        autocomplete="current-password"
+      />
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        id="btnLogin"
+      >
+        Entrar na academia
+      </button>
+
+      <div class="link-text">
+        Novo atleta?
+        <button type="button" id="goRegister">Cadastrar</button>
+      </div>
+
+      <div
+        id="loginError"
+        class="alert alert-error hidden"
+        role="alert"
+      ></div>
+    </div>
+
+    <!-- CADASTRO -->
+    <div class="glass-card animate-in hidden" id="registerPanel">
+      <div class="brand">
+        <div class="logo-slot">
+          <img
+            class="logo-sync"
+            src="logo.png"
+            alt=""
+          />
+
+          <div class="logo-fallback">
+            <span class="mascot">
+              <svg
+                viewBox="0 0 64 64"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4 36c8-2 14-6 20-12 4-4 8-10 14-10 4 0 6 2 8 6l10 4-8 2 6 6-10-1 4 6-12-3c-6 4-14 6-22 6-4 0-8-1-10-4z"
+                  fill="currentColor"
+                />
+                <circle cx="40" cy="22" r="1.6" fill="#0a0a0a" />
+                <path
+                  d="M22 30l-4 8 8-4"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+          </div>
+        </div>
+
         <div class="brand-tagline">Lute Como Um Tubarão</div>
       </div>
+
       <h2>Cadastro</h2>
-      <div id="registerHint" class="alert alert-info hidden"></div>
+
+      <div
+        id="registerHint"
+        class="alert alert-info hidden"
+      ></div>
+
       <label for="regName">Nome completo</label>
-      <input type="text" id="regName" autocomplete="name" />
+      <input
+        type="text"
+        id="regName"
+        autocomplete="name"
+      />
+
       <label for="regPhone">WhatsApp</label>
-      <input type="tel" id="regPhone" placeholder="(98) 98467-3820" />
+      <input
+        type="tel"
+        id="regPhone"
+        placeholder="(98) 98467-3820"
+      />
+
       <label for="regAge">Idade do atleta</label>
-      <input type="number" id="regAge" min="1" max="99" />
-            <label for="regPassword">Crie sua senha (6 dígitos)</label>
-      <input type="text" id="regPassword" maxlength="6" inputmode="numeric" pattern="\d{6}" autocomplete="new-password" placeholder="000000" />
+      <input
+        type="number"
+        id="regAge"
+        min="1"
+        max="99"
+      />
+
+      <label for="regPassword">Crie sua senha (6 dígitos)</label>
+      <input
+        type="text"
+        id="regPassword"
+        maxlength="6"
+        inputmode="numeric"
+        pattern="\d{6}"
+        autocomplete="new-password"
+        placeholder="000000"
+      />
+
       <label for="regPasswordConfirm">Confirme a senha</label>
-      <input type="password" id="regPasswordConfirm" maxlength="6" inputmode="numeric" pattern="\d{6}" autocomplete="new-password" placeholder="000000" />
-      <button type="button" class="btn btn-primary" id="btnRegister">Concluir cadastro</button>
+      <input
+        type="password"
+        id="regPasswordConfirm"
+        maxlength="6"
+        inputmode="numeric"
+        pattern="\d{6}"
+        autocomplete="new-password"
+        placeholder="000000"
+      />
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        id="btnRegister"
+      >
+        Concluir cadastro
+      </button>
+
       <div class="link-text">
         <button type="button" id="goLogin">Já tenho conta</button>
       </div>
-      <div id="registerError" class="alert alert-error hidden"></div>
+
+      <div
+        id="registerError"
+        class="alert alert-error hidden"
+      ></div>
     </div>
 
+  </div>
+  <!-- FIM DA ÁREA DE AUTENTICAÇÃO -->
 
+  <!-- APLICATIVO PRINCIPAL -->
   <div id="appRoot">
+
     <header class="topbar">
       <div class="topbar-logo" id="topbarLogoWrap">
-        <img id="logoImgTop" src="logo.png" alt="" class="hidden" />
+        <img
+          id="logoImgTop"
+          src="logo.png"
+          alt=""
+          class="hidden"
+        />
+
         <span id="topbarEmoji">
-  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" width="24" height="24">
-    <path d="M4 36c8-2 14-6 20-12 4-4 8-10 14-10 4 0 6 2 8 6l10 4-8 2 6 6-10-1 4 6-12-3c-6 4-14 6-22 6-4 0-8-1-10-4z" fill="currentColor"/>
-    <circle cx="40" cy="22" r="1.6" fill="#0a0a0a"/>
-    <path d="M22 30l-4 8 8-4" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-  </svg>
-</span>
+          <svg
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+          >
+            <path
+              d="M4 36c8-2 14-6 20-12 4-4 8-10 14-10 4 0 6 2 8 6l10 4-8 2 6 6-10-1 4 6-12-3c-6 4-14 6-22 6-4 0-8-1-10-4z"
+              fill="currentColor"
+            />
+            <circle cx="40" cy="22" r="1.6" fill="#0a0a0a" />
+            <path
+              d="M22 30l-4 8 8-4"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
       </div>
+
       <div>
         <h1>ELITE COMBAT</h1>
         <div class="meta" id="topUserLine">—</div>
       </div>
+
       <div class="topbar-actions">
-        <button type="button" class="btn btn-ghost btn-sm" id="btnLogout">Sair</button>
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          id="btnLogout"
+        >
+          Sair
+        </button>
       </div>
     </header>
+
     <div class="layout">
-      <nav class="sidebar" id="sidebarNav" aria-label="Menu"></nav>
-      <main class="main view-enter" id="mainView"></main>
+      <nav
+        class="sidebar"
+        id="sidebarNav"
+        aria-label="Menu"
+      ></nav>
+
+      <main
+        class="main view-enter"
+        id="mainView"
+      ></main>
     </div>
-    <nav class="bottom-nav" id="bottomNav" aria-label="Menu mobile"></nav>
+
+    <nav
+      class="bottom-nav"
+      id="bottomNav"
+      aria-label="Menu mobile"
+    ></nav>
+
+  </div>
+  <!-- FIM DO APLICATIVO PRINCIPAL -->
+
+  <!-- MODAL DE VÍDEO DO UNIFORME -->
+  <div
+    id="videoModal"
+    class="video-modal hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+  >
+    <div
+      class="video-modal-backdrop"
+      data-close="1"
+    ></div>
+
+    <div class="video-modal-body">
+      <button
+        type="button"
+        class="video-modal-close"
+        id="videoModalClose"
+        aria-label="Fechar"
+      >
+        ✕
+      </button>
+
+      <div
+        class="video-modal-title"
+        id="videoModalTitle"
+      ></div>
+
+      <div
+        class="video-modal-player"
+        id="videoModalPlayer"
+      ></div>
+    </div>
   </div>
 
-    <!-- Modal de vídeo do uniforme -->
-  <div id="videoModal" class="video-modal hidden" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="video-modal-backdrop" data-close="1"></div>
-    <div class="video-modal-body">
-      <button type="button" class="video-modal-close" id="videoModalClose" aria-label="Fechar">✕</button>
-      <div class="video-modal-title" id="videoModalTitle"></div>
-      <div class="video-modal-player" id="videoModalPlayer"></div>
-    </div>
-  </div>
-  
+  <!-- JavaScript principal -->
   <script src="js/app.js"></script>
 </body>
 </html>

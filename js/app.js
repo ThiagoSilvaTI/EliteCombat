@@ -299,20 +299,28 @@
     return html;
   }
 
-  function htmlUniformes() {
+    function htmlUniformes() {
     let html = `
       <div class="page-head">
         <h2>Uniformes</h2>
         <p>Equipamentos oficiais Elite Combat</p>
       </div>
       <div class="uniform-grid">`;
+      
     uniformsCache.forEach((u) => {
       const hasVideo = !!(u.video || u.youtube);
-      const thumb = u.image
-        ? `<img src="${escapeHtml(u.image)}" alt="${escapeHtml(u.name)}"
+      
+      // CORREÇÃO AQUI: Monta a URL completa da imagem usando a API_URL
+      const imageUrl = u.image 
+        ? (u.image.startsWith("http") ? u.image : `${API_URL}/${u.image.replace(/^\//, "")}`) 
+        : null;
+
+      const thumb = imageUrl
+        ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(u.name)}"
                loading="lazy"
                onerror="this.parentElement.classList.add('no-image');this.remove()" />`
         : ICONS.shirt;
+        
       html += `
         <div class="uniform-item ${hasVideo ? "has-video" : ""}"
              ${hasVideo ? `data-video-id="${escapeHtml(u.id)}"` : ""}>
@@ -404,7 +412,7 @@
 
     /* ---------- Modal de vídeo do uniforme ---------- */
 
-  function openVideoModal(uniform) {
+    function openVideoModal(uniform) {
     const modal = $("videoModal");
     const title = $("videoModalTitle");
     const player = $("videoModalPlayer");
@@ -414,9 +422,13 @@
     player.innerHTML = "";
 
     if (uniform.video) {
-      // vídeo local
+      // CORREÇÃO AQUI: Monta a URL completa do vídeo
+      const videoUrl = uniform.video.startsWith("http") 
+        ? uniform.video 
+        : `${API_URL}/${uniform.video.replace(/^\//, "")}`;
+
       const vid = document.createElement("video");
-      vid.src = uniform.video;
+      vid.src = videoUrl;
       vid.controls = true;
       vid.autoplay = true;
       vid.playsInline = true;
@@ -429,7 +441,6 @@
       });
       player.appendChild(vid);
     } else if (uniform.youtube) {
-      // embed do YouTube
       const iframe = document.createElement("iframe");
       iframe.src =
         `https://www.youtube.com/embed/${encodeURIComponent(uniform.youtube)}?autoplay=1&rel=0`;
