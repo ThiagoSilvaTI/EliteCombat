@@ -1,6 +1,8 @@
 # Integração das fichas de inscrição
 
-O perfil do aluno vincula a ficha e o contrato do site pelo nome, WhatsApp e número de cadastro. O número é informado pelo aluno no perfil; a ficha só é exibida se os três dados corresponderem.
+O login valida o nome e o número de cadastro no site de inscrições. O primeiro login válido recebe o perfil de professor; os seguintes recebem perfil de aluno. A ficha e o contrato ficam disponíveis no perfil depois da validação.
+
+O número de cadastro funciona como senha e é um dado que o aluno recebe ao concluir a inscrição; não o trate como segredo forte. A integração entre servidores usa a chave privada abaixo para que a consulta dos dados não dependa de uma chave no aplicativo.
 
 ## Variáveis no Render
 

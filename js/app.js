@@ -156,12 +156,10 @@
     return p || "—";
   }
 
-  function showAuth(panel) {
+  function showAuth() {
     $("authRoot").classList.remove("hidden");
     $("appRoot").classList.remove("active");
-    ["loginPanel", "registerPanel"].forEach((id) => {
-  $(id).classList.toggle("hidden", id !== panel);
-});
+    $("loginPanel").classList.remove("hidden");
   }
 
   function showApp() {
@@ -235,7 +233,7 @@
       else if (view === "chamada") main.innerHTML = htmlChamada();
       else if (view === "pagamentos") main.innerHTML = htmlPagamentos();
       else if (view === "delegacao") main.innerHTML = htmlDelegacao();
-      else if (view === "perfil") main.innerHTML = htmlPerfil();
+      else if (view === "perfil") main.innerHTML = await htmlPerfil();
       bindView(view);
     } catch (e) {
       main.innerHTML = `<div class="alert alert-error">${escapeHtml(e.message)}</div>`;
@@ -473,7 +471,7 @@
     let role = prof ? "Professor" : "Aluno";
     let registration = null;
     let registrationError = "";
-    if (!prof && currentUser.registrationNumber) {
+    if (currentUser.registrationNumber) {
       try {
         const data = await api("/api/me/registration");
         registration = data.registration;
@@ -513,8 +511,8 @@
             ${escapeHtml(registrationError)}
           </div>
         </section>
-        ${registration ? htmlEnrollment(registration) : ""}
-      `}`;
+      `}
+      ${registration ? htmlEnrollment(registration) : ""}`;
   }
 
     /* ---------- Modal de vídeo do uniforme ---------- */
@@ -813,36 +811,17 @@
     } catch {
       /* server offline */
     }
-    showAuth("loginPanel");
-    const hint = $("registerHint");
+    showAuth();
     try {
-      const boot = await fetch(`${API_URL}/api/bootstrap`).then((r) => {
-  if (!r.ok) throw new Error("Falha ao conectar ao servidor.");
-  return r.json();
-});
-      if (!boot.hasUsers) {
-        hint.textContent = "Primeiro cadastro: você será o professor";
-        hint.classList.remove("hidden");
+      const response = await fetch(`${API_URL}/api/bootstrap`);
+      if (!response.ok) {
+        throw new Error("Falha ao conectar ao servidor.");
       }
     } catch {
-      $("loginError").textContent = "Servidor offline. Execute: npm start na pasta ELITE APP";
+      $("loginError").textContent = "Servidor offline. Tente novamente mais tarde.";
       $("loginError").classList.remove("hidden");
     }
   }
-
-  $("goRegister").addEventListener("click", async () => {
-    showAuth("registerPanel");
-    try {
-      const boot = await api("/api/bootstrap");
-      const hint = $("registerHint");
-      if (!boot.hasUsers) {
-        hint.textContent = "Primeiro cadastro: você será o professor";
-        hint.classList.remove("hidden");
-      } else hint.classList.add("hidden");
-    } catch (_) {}
-  });
-
-  $("goLogin").addEventListener("click", () => showAuth("loginPanel"));
 
   $("btnLogin").addEventListener("click", async () => {
     $("loginError").classList.add("hidden");
@@ -851,7 +830,7 @@
       const data = await api("/api/login", {
         method: "POST",
         body: JSON.stringify({
-          phone: $("loginPhone").value,
+          name: $("loginName").value.trim(),
           password: $("loginPassword").value.trim(),
         }),
       });
@@ -868,47 +847,6 @@
     }
   });
 
-    $("btnRegister").addEventListener("click", async () => {
-    $("registerError").classList.add("hidden");
-
-    const pw = $("regPassword").value;
-    const pw2 = $("regPasswordConfirm").value;
-
-    if (pw.length < 6) {
-      $("registerError").textContent = "A senha deve ter pelo menos 6 caracteres.";
-      $("registerError").classList.remove("hidden");
-      return;
-    }
-    if (pw !== pw2) {
-      $("registerError").textContent = "As senhas não coincidem.";
-      $("registerError").classList.remove("hidden");
-      return;
-    }
-
-    try {
-      showLoading(true);
-      await api("/api/register", {
-        method: "POST",
-        body: JSON.stringify({
-          name: $("regName").value.trim(),
-          phone: $("regPhone").value,
-          age: Number($("regAge").value),
-          password: pw,
-        }),
-      });
-      alert("Cadastro realizado! Faça login com sua senha.");
-      showAuth("loginPanel");
-      $("loginPhone").value = $("regPhone").value;
-      $("loginPassword").value = "";
-      $("loginPassword").focus();
-    } catch (e) {
-      $("registerError").textContent = e.message;
-      $("registerError").classList.remove("hidden");
-    } finally {
-      showLoading(false);
-    }
-  });
-
   $("btnLogout").addEventListener("click", async () => {
     try {
       await api("/api/logout", { method: "POST" });
@@ -916,7 +854,7 @@
     token = "";
     sessionStorage.removeItem("elite_token");
     currentUser = null;
-    showAuth("loginPanel");
+    showAuth();
   });
 
   bootstrap();

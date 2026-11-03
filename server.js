@@ -94,7 +94,7 @@ function normalizeStudentName(input) {
     .toLocaleLowerCase("pt-BR");
 }
 
-async function fetchRegistration(user, registrationNumber) {
+async function fetchRegistration(registrationNumber, phone = "") {
   const integrationToken = process.env.REGISTRATION_API_TOKEN;
   if (!integrationToken) {
     const error = new Error("Integração com o site de inscrições não configurada.");
@@ -104,7 +104,7 @@ async function fetchRegistration(user, registrationNumber) {
 
   const url = new URL("/api/integracao/inscricao", REGISTRATION_API_URL);
   url.searchParams.set("numero", registrationNumber);
-  url.searchParams.set("telefone", user.phone);
+  if (phone) url.searchParams.set("telefone", phone);
 
   let response;
   try {
@@ -132,10 +132,9 @@ async function fetchRegistration(user, registrationNumber) {
   const registration = data.inscricao;
   if (
     !registration ||
-    phoneForMatch(registration.telefone) !== phoneForMatch(user.phone) ||
-    normalizeStudentName(registration.nome) !== normalizeStudentName(user.name)
+    (phone && phoneForMatch(registration.telefone) !== phoneForMatch(phone))
   ) {
-    const error = new Error("Não encontramos uma inscrição com esse telefone, nome e número.");
+    const error = new Error("Não encontramos uma inscrição com esse telefone e número.");
     error.status = 404;
     throw error;
   }
@@ -145,7 +144,7 @@ async function fetchRegistration(user, registrationNumber) {
 
 function turmaFromAge(age) {
   const n = Number(age);
-  if (n >= 5 && n <= 8) return TURMA.BABY;
+  if (n >= 4 && n <= 8) return TURMA.BABY;
   if (n >= 9 && n <= 13) return TURMA.KIDS;
   if (n >= 14) return TURMA.JOVEM;
   return null;
@@ -243,65 +242,62 @@ async function handleApi(req, res, pathname) {
     return sendJson(res, 200, { hasUsers: db.users.length > 0, uniforms: db.uniforms });
   }
 
-    if (method === "POST" && pathname === "/api/register") {
-    const body = await readBody(req);
-    const name = String(body.name || "").trim();
-    const phone = normalizePhone(body.phone);
-    const age = Number(body.age);
-    const password = String(body.password || "").trim();
-    const db = readDb();
-
-    if (name.length < 3) return sendJson(res, 400, { error: "Informe o nome completo." });
-    if (!phone || phone.length < 12) return sendJson(res, 400, { error: "WhatsApp inválido (use DDD)." });
-    if (password.length < 6) {
-      return sendJson(res, 400, { error: "A senha deve ter pelo menos 6 caracteres." });
-    }
-    if (db.users.some((u) => u.phone === phone)) {
-      return sendJson(res, 400, { error: "Este WhatsApp já está cadastrado." });
-    }
-
-    const isFirst = db.users.length === 0;
-    let role = "aluno";
-    let turma = null;
-
-    if (isFirst) {
-      role = "professor";
-      if (!age || age < 1) return sendJson(res, 400, { error: "Informe sua idade." });
-    } else {
-      turma = turmaFromAge(age);
-      if (!turma) {
-        return sendJson(res, 400, {
-          error: "Idade inválida. Baby: 5–8, Kids: 9–13, Jovem/Adulto: 14+.",
-        });
-      }
-    }
-
-    db.users.push({
-      id: uid(),
-      name,
-      phone,
-      age,
-      role,
-      turma,
-      password,
-      createdAt: Date.now(),
-    });
-    writeDb(db);
-    return sendJson(res, 201, {
-      ok: true,
-      role,
-      turma,
-      message: "Cadastro realizado com sucesso.",
-    });
-  }
-
   if (method === "POST" && pathname === "/api/login") {
     const body = await readBody(req);
-    const phone = normalizePhone(body.phone);
-    const password = String(body.password || "").trim();
+    const name = String(body.name || "").trim();
+    const registrationNumber = String(body.password || "").trim();
+    if (name.length < 3 || !/^\d{11}$/.test(registrationNumber)) {
+      return sendJson(res, 400, { error: "Informe seu nome e o número de cadastro de 11 dígitos." });
+    }
+
+    let registration;
+    try {
+      registration = await fetchRegistration(registrationNumber);
+    } catch (error) {
+      if (error.status === 503 || error.status === 502) {
+        return sendJson(res, error.status, { error: error.message });
+      }
+      return sendJson(res, 401, { error: "Nome ou número de cadastro incorretos." });
+    }
+    if (normalizeStudentName(registration.nome) !== normalizeStudentName(name)) {
+      return sendJson(res, 401, { error: "Nome ou número de cadastro incorretos." });
+    }
+
     const db = readDb();
-    const user = db.users.find((u) => u.phone === phone && u.password === password);
-    if (!user) return sendJson(res, 401, { error: "WhatsApp ou senha incorretos." });
+    const phone = normalizePhone(registration.telefone);
+    const user = db.users.find((u) => u.registrationNumber === registrationNumber)
+      || db.users.find((u) =>
+        phoneForMatch(u.phone) === phoneForMatch(phone)
+        && normalizeStudentName(u.name) === normalizeStudentName(registration.nome)
+      );
+
+    if (user) {
+      user.registrationNumber = registrationNumber;
+    } else {
+      const age = Number(registration.idade);
+      const studentTurma = /baby/i.test(registration.turma || "")
+        ? TURMA.BABY
+        : /kids/i.test(registration.turma || "")
+          ? TURMA.KIDS
+          : turmaFromAge(age);
+      const newUser = {
+        id: uid(),
+        name: registration.nome,
+        phone,
+        age,
+        role: db.users.length === 0 ? "professor" : "aluno",
+        turma: studentTurma,
+        registrationNumber,
+        createdAt: Date.now(),
+      };
+      db.users.push(newUser);
+      writeDb(db);
+      const token = uid();
+      sessions.set(token, newUser.id);
+      return sendJson(res, 200, { token, user: publicUser(newUser) });
+    }
+
+    writeDb(db);
     const token = uid();
     sessions.set(token, user.id);
     return sendJson(res, 200, { token, user: publicUser(user) });
@@ -329,10 +325,6 @@ async function handleApi(req, res, pathname) {
   }
 
   if (pathname === "/api/me/registration" && (method === "GET" || method === "POST")) {
-    if (user.role !== "aluno") {
-      return sendJson(res, 403, { error: "Apenas alunos podem vincular uma inscrição." });
-    }
-
     let registrationNumber = user.registrationNumber;
     if (method === "POST") {
       const body = await readBody(req);
@@ -345,7 +337,7 @@ async function handleApi(req, res, pathname) {
     }
 
     try {
-      const registration = await fetchRegistration(user, registrationNumber);
+      const registration = await fetchRegistration(registrationNumber, user.phone);
       if (method === "POST") {
         user.registrationNumber = registrationNumber;
         writeDb(db);
