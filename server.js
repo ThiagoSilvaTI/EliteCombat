@@ -8,6 +8,7 @@ const PORT = process.env.PORT || 3847;
 const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, "data");
 const DB_PATH = path.join(DATA_DIR, "db.json");
+const REGISTRATION_API_URL = process.env.REGISTRATION_API_URL || "https://elite-combat.onrender.com";
 
 const TURMA = { BABY: "baby", KIDS: "kids", JOVEM: "jovem_adulto" };
 
@@ -77,6 +78,69 @@ function normalizePhone(input) {
     return digits.startsWith("55") ? digits : "55" + digits;
   }
   return digits;
+}
+
+function phoneForMatch(input) {
+  const digits = String(input || "").replace(/\D/g, "");
+  return digits.startsWith("55") && digits.length === 13 ? digits.slice(2) : digits;
+}
+
+function normalizeStudentName(input) {
+  return String(input || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("pt-BR");
+}
+
+async function fetchRegistration(user, registrationNumber) {
+  const integrationToken = process.env.REGISTRATION_API_TOKEN;
+  if (!integrationToken) {
+    const error = new Error("Integração com o site de inscrições não configurada.");
+    error.status = 503;
+    throw error;
+  }
+
+  const url = new URL("/api/integracao/inscricao", REGISTRATION_API_URL);
+  url.searchParams.set("numero", registrationNumber);
+  url.searchParams.set("telefone", user.phone);
+
+  let response;
+  try {
+    response = await fetch(url, {
+      headers: { Authorization: `Bearer ${integrationToken}` },
+    });
+  } catch (cause) {
+    console.error("Falha ao consultar o site de inscrições:", cause);
+    const error = new Error("Não foi possível conectar ao site de inscrições.");
+    error.status = 502;
+    throw error;
+  }
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(
+      response.status === 404
+        ? "Não encontramos uma inscrição com esse telefone e número."
+        : data.erro || "Falha ao consultar a inscrição."
+    );
+    error.status = response.status === 404 ? 404 : 502;
+    throw error;
+  }
+
+  const registration = data.inscricao;
+  if (
+    !registration ||
+    phoneForMatch(registration.telefone) !== phoneForMatch(user.phone) ||
+    normalizeStudentName(registration.nome) !== normalizeStudentName(user.name)
+  ) {
+    const error = new Error("Não encontramos uma inscrição com esse telefone, nome e número.");
+    error.status = 404;
+    throw error;
+  }
+
+  return registration;
 }
 
 function turmaFromAge(age) {
@@ -262,6 +326,37 @@ async function handleApi(req, res, pathname) {
       canPost: canPost(db, user),
       delegated: db.delegatedStudentIds.includes(user.id),
     });
+  }
+
+  if (pathname === "/api/me/registration" && (method === "GET" || method === "POST")) {
+    if (user.role !== "aluno") {
+      return sendJson(res, 403, { error: "Apenas alunos podem vincular uma inscrição." });
+    }
+
+    let registrationNumber = user.registrationNumber;
+    if (method === "POST") {
+      const body = await readBody(req);
+      registrationNumber = String(body.registrationNumber || "").trim();
+      if (!/^\d{11}$/.test(registrationNumber)) {
+        return sendJson(res, 400, { error: "Informe o número de cadastro de 11 dígitos." });
+      }
+    } else if (!registrationNumber) {
+      return sendJson(res, 200, { registration: null });
+    }
+
+    try {
+      const registration = await fetchRegistration(user, registrationNumber);
+      if (method === "POST") {
+        user.registrationNumber = registrationNumber;
+        writeDb(db);
+      }
+      return sendJson(res, 200, {
+        registration,
+        user: publicUser(user),
+      });
+    } catch (error) {
+      return sendJson(res, error.status || 502, { error: error.message });
+    }
   }
 
   if (method === "GET" && pathname === "/api/announcements") {

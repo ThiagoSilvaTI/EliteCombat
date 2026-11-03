@@ -43,6 +43,7 @@
   };
 
     const API_URL = "https://elitecombat.onrender.com";
+  const REGISTRATION_SITE_URL = "https://elite-combat.onrender.com";
 
   let token = sessionStorage.getItem("elite_token") || "";
   let currentUser = null;
@@ -388,9 +389,99 @@
       <div id="delArea"><div class="empty-state"><span class="empty-icon">${ICONS.clock}</span>Carregando…</div></div>`;
   }
 
-  function htmlPerfil() {
+  function enrollmentField(label, value) {
+    const text = value === null || value === undefined || String(value).trim() === ""
+      ? "—"
+      : String(value);
+    return `<div class="row"><span>${escapeHtml(label)}</span><strong>${escapeHtml(text)}</strong></div>`;
+  }
+
+  function htmlEnrollment(registration) {
+    const healthQuestions = [
+      ["q1", "Condição médica que exige cuidado"],
+      ["q2", "Condição psicológica ou do neurodesenvolvimento"],
+      ["q3", "Deficiência ou limitação física"],
+      ["q4", "Histórico de lesão, cirurgia ou fratura"],
+      ["q5", "Uso de medicamento contínuo"],
+      ["q6", "Alergia relevante"],
+      ["q7", "Desmaio, dor no peito ou falta de ar"],
+      ["q8", "Orientação médica para restringir exercícios"],
+    ];
+    const health = registration.saude || {};
+    const contractUrl = `${REGISTRATION_SITE_URL}/api/contrato/${encodeURIComponent(registration.numero_cadastro)}`;
+    let healthRows = "";
+
+    healthQuestions.forEach(([key, label]) => {
+      healthRows += enrollmentField(label, health[key] === "sim" ? "Sim" : health[key] === "nao" ? "Não" : "—");
+      if (health[key] === "sim" && health[`${key}_detalhe`]) {
+        healthRows += enrollmentField("Detalhe", health[`${key}_detalhe`]);
+      }
+    });
+
+    return `
+      <section class="panel" style="margin-top:1rem">
+        <h3>Ficha de inscrição · Nº ${escapeHtml(registration.numero_cadastro)}</h3>
+        <p>Preenchida em ${escapeHtml(registration.data_preenchimento || "—")}</p>
+        <div class="profile-grid">
+          ${enrollmentField("Responsável pelo atendimento", registration.responsavel_atendimento)}
+          ${enrollmentField("Nome", registration.nome)}
+          ${enrollmentField("Data de nascimento", registration.data_nascimento)}
+          ${enrollmentField("Idade", registration.idade === null ? null : `${registration.idade} anos`)}
+          ${enrollmentField("WhatsApp", formatPhone(registration.telefone))}
+          ${enrollmentField("Turma pretendida", registration.turma)}
+          ${enrollmentField("Período", registration.periodo)}
+          ${enrollmentField("Horário", registration.horario)}
+          ${enrollmentField("Já praticou Muay Thai?", registration.ja_muaythai)}
+          ${enrollmentField("Já praticou outra arte marcial?", registration.ja_outra_arte)}
+          ${enrollmentField("Modalidade", registration.modalidade)}
+          ${enrollmentField("Tempo de prática", registration.tempo_pratica)}
+          ${enrollmentField("Objetivo", registration.objetivo)}
+        </div>
+      </section>
+      <section class="panel" style="margin-top:1rem">
+        <h3>Responsável legal</h3>
+        <div class="profile-grid">
+          ${enrollmentField("Nome", registration.resp_nome)}
+          ${enrollmentField("Parentesco", registration.resp_parentesco)}
+          ${enrollmentField("Telefone", formatPhone(registration.resp_telefone))}
+        </div>
+      </section>
+      <section class="panel" style="margin-top:1rem">
+        <h3>Contato de emergência</h3>
+        <div class="profile-grid">
+          ${enrollmentField("Nome", registration.emerg_nome)}
+          ${enrollmentField("Parentesco", registration.emerg_parentesco)}
+          ${enrollmentField("Telefone", formatPhone(registration.emerg_telefone))}
+        </div>
+      </section>
+      <section class="panel" style="margin-top:1rem">
+        <h3>Saúde e treino</h3>
+        <div class="profile-grid">
+          ${healthRows}
+          ${enrollmentField("Adaptações e observações", registration.adaptacoes)}
+          ${enrollmentField("Autorização de uso das informações de saúde", registration.autorizou_dados)}
+        </div>
+      </section>
+      ${registration.contrato_disponivel ? `
+        <a class="btn btn-primary" href="${escapeHtml(contractUrl)}" target="_blank" rel="noopener" style="margin-top:1rem">
+          Baixar contrato de inscrição
+        </a>` : `<p class="alert alert-info" style="margin-top:1rem">O contrato ainda não está disponível para download.</p>`}`;
+  }
+
+  async function htmlPerfil() {
     const prof = currentUser.role === "professor";
     let role = prof ? "Professor" : "Aluno";
+    let registration = null;
+    let registrationError = "";
+    if (!prof && currentUser.registrationNumber) {
+      try {
+        const data = await api("/api/me/registration");
+        registration = data.registration;
+      } catch (e) {
+        registrationError = e.message;
+      }
+    }
+
     return `
       <div class="page-head">
         <h2>Perfil</h2>
@@ -406,8 +497,24 @@
         <div class="row"><span>Função</span><strong>${role}</strong></div>
       </div>
       <p style="color:var(--muted);font-size:0.85rem;margin-top:1rem">
-        Dados salvos no servidor local. Acesse pelo mesmo endereço na rede para compartilhar com outros dispositivos.
-      </p>`;
+        Dados salvos no servidor da academia.
+      </p>
+      ${prof ? "" : `
+        <section class="panel" style="margin-top:1rem">
+          <h3>Minha inscrição</h3>
+          <p>Vincule sua ficha usando o número de cadastro recebido após preencher o formulário. O telefone e o nome precisam ser iguais aos do cadastro.</p>
+          <label for="registrationNumber">Nº de cadastro (11 dígitos)</label>
+          <input type="text" id="registrationNumber" inputmode="numeric" maxlength="11"
+            value="${escapeHtml(currentUser.registrationNumber || "")}" placeholder="Ex.: 12345678901" />
+          <button type="button" class="btn btn-primary btn-sm" id="btnLinkRegistration" style="margin-top:0.75rem">
+            ${currentUser.registrationNumber ? "Atualizar vínculo" : "Vincular inscrição"}
+          </button>
+          <div id="registrationError" class="alert alert-error ${registrationError ? "" : "hidden"}" role="alert">
+            ${escapeHtml(registrationError)}
+          </div>
+        </section>
+        ${registration ? htmlEnrollment(registration) : ""}
+      `}`;
   }
 
     /* ---------- Modal de vídeo do uniforme ---------- */
@@ -531,6 +638,29 @@
           const u = uniformsCache.find((x) => x.id === el.dataset.videoId);
           if (u) openVideoModal(u);
         });
+      });
+    }
+
+    if (view === "perfil") {
+      $("btnLinkRegistration")?.addEventListener("click", async () => {
+        const errorBox = $("registrationError");
+        errorBox.classList.add("hidden");
+        try {
+          showLoading(true);
+          const data = await api("/api/me/registration", {
+            method: "POST",
+            body: JSON.stringify({
+              registrationNumber: $("registrationNumber").value.trim(),
+            }),
+          });
+          currentUser = data.user;
+          await renderView("perfil");
+        } catch (e) {
+          errorBox.textContent = e.message;
+          errorBox.classList.remove("hidden");
+        } finally {
+          showLoading(false);
+        }
       });
     }
   }
